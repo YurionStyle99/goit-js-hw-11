@@ -15,7 +15,3 @@ export async function fetchPhoto(name, page = 1, perPage = 40) {
     return { photos: [], totalPages: 0, totalHits: 0 };
   }
 }
-
-
-
-console.log(fetchPhoto('cat'))

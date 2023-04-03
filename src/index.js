@@ -18,6 +18,8 @@ let totalPages = 0;
 searchForm.addEventListener('submit', async (evt) => {
   evt.preventDefault();
   photoGallery.innerHTML = '';
+  page = 1;
+  
   const searchQuery = searchInput.value.trim();
   if (searchQuery.length === 0) {
     renderPhoto([]);
@@ -68,7 +70,7 @@ console.log(totalPages)
 
 
 const gallery = new SimpleLightbox('.gallery a');
-gallery.refresh();
+let lightbox = null;
 function renderPhoto(photos) {
   if (photos.length === 0) {
     photoGallery.innerHTML = '';
@@ -105,11 +107,15 @@ function renderPhoto(photos) {
 
   photoGallery.insertAdjacentHTML('beforeend', photoItem);
 
-  const lightbox = new SimpleLightbox('.photo-card-link', {
-    captions: true,
-    captionsData: 'alt',
-    captionDelay: 250, 
-  });
+  if (!lightbox) {
+    lightbox = new SimpleLightbox('.photo-card-link', {
+      captions: true,
+      captionsData: 'alt',
+      captionDelay: 250, 
+    });
+  } else {
+    lightbox.refresh();
+  }
 
   if (photos.photos.length < 40) {
     loadMoreBtn.style.display = 'none';
@@ -125,16 +131,19 @@ function renderPhoto(photos) {
 
 let loading = false;
 
-function checkScroll() {
+async function checkScroll() {
   if (loading) return;
   if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight) {
     loading = true;
     page++;
-    fetchPhoto(prevSearchQuery, page)
-      .then(photos => {
-        renderPhoto(photos);
-        loading = false;
-      });
+    try {
+      const photos = await fetchPhoto(prevSearchQuery, page);
+      renderPhoto(photos);
+      loading = false;
+    } catch (error) {
+      console.error(error);
+      loading = false;
+    }
   }
 }
 
